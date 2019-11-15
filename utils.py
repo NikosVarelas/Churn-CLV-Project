@@ -163,7 +163,7 @@ class Preprocessor(object):
 
         return output
 
-    def fit(self, key, value):
+    def transform(self, key, value):
         train_features = self.stats_visits_baskets(self.train, key, value)
         predict_features = self.stats_visits_baskets(self.predict, key, value)
         return train_features, predict_features
@@ -171,7 +171,7 @@ class Preprocessor(object):
 
 class LaggedFeatures(Preprocessor):
     def __init__(self, data, months, date_col, basket_col, lag):
-        super().__init__(data, months, date_col, basket_col)
+        super(LaggedFeatures, self).__init__(data, months, date_col, basket_col)
         self.lag = lag
         self.train_date_filter = self.max_date - relativedelta(
             months=self.lag + self.months)
@@ -213,7 +213,7 @@ class LaggedFeatures(Preprocessor):
 
 class LabelCalculator(Preprocessor):
     def __init__(self, data, months, date_col, basket_col, churn_days):
-        super().__init__(data, months, date_col, basket_col)
+        Preprocessor.__init__(self, data, months, date_col, basket_col)
         self.churn_days = churn_days
 
     def clv_estimate(self, key, value):
@@ -231,11 +231,8 @@ class LabelCalculator(Preprocessor):
 
         return label_df
 
-    def fit(self, key, value):
+    def transform(self, key, value):
         clv = self.clv_estimate(key, value)
         churn = self.churn_estimate(key)
         output = clv.merge(churn, on=key)
         return output[['Customer_no', 'churn', 'clv']]
-
-
-
