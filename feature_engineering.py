@@ -22,13 +22,13 @@ class PcaModel(PCA):
         print('Singular values:\n{}'.format(self.singular_values_))
         return self
 
-    def transformer(self, df):
+    def transform(self, df):
         """
 
         :param df: Pandas dataframe
         :return: Pandas dataframe transformed by the pca input method
         """
-        output = self.transform(df)
+        output = PCA.transform(self, df)
         output = pd.DataFrame(
             data=output,
             columns=['pc_' + str(x + 1) for x in range(self.n_components)],
@@ -39,13 +39,13 @@ class PcaModel(PCA):
 
 class Normalization(StandardScaler):
 
-    def transformer(self, df):
+    def transform(self, df, copy=None):
         """
 
         :param df: Pandas dataframe
         :return: Pandas dataframe transformed based on scaler
         """
-        output = self.transform(df)
+        output = StandardScaler.transform(self, df)
         output = pd.DataFrame(output)
         output.columns = df.columns
 
