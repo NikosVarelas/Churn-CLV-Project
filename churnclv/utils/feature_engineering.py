@@ -12,7 +12,9 @@ class PcaModel(PCA):
     def fit(self, df, y=None):
         """
 
-        :param df: Pandas dataframe
+        :param df:
+        :param y:
+        :return:
         """
         self._fit(df)
         print('Variance explained by components:\n {}\n'.format(

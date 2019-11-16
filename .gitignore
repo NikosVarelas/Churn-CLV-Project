@@ -2,3 +2,8 @@ data
 .idea
 __pycache__
 venv/
+dist/
+*.whl
+*.pyc
+churnclv.egg-info/*
+build/

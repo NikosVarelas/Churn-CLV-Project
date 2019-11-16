@@ -1,5 +1,5 @@
-from utils import LabelCalculator, LaggedFeatures
-from feature_engineering import PcaModel, Normalization
+from churnclv.utils.preproc import LabelCalculator, LaggedFeatures
+from churnclv.utils.feature_engineering import PcaModel, Normalization
 
 
 class Pipeline(LabelCalculator, LaggedFeatures, PcaModel, Normalization):
