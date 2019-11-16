@@ -23,7 +23,7 @@ with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'requirement
 
 setup(
     name='churnclv',
-    description="Bundle of models and preprocessing techniques for Churn and CLV predictions.",
+    description="Bundle of models and preprocessing techniques for Churn and CLV prediction.",
     author='Nikos Varelas',
     author_email='nikos.vare@gmail.com',
     version='0.1.0',
