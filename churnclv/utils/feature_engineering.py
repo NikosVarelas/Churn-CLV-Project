@@ -79,17 +79,19 @@ def get_top_abs_correlations(df, n=5):
 
 
 def train_valid_test_split(inputs, target, percentage, stratify_fold):
+    X = inputs.drop(target, axis=1)
+    Y = inputs[target]
     if stratify_fold:
-        x, x_test, y, y_test = train_test_split(inputs,
-                                                target,
+        x, x_test, y, y_test = train_test_split(X,
+                                                Y,
                                                 test_size=percentage,
                                                 random_state=1,
-                                                stratify=target)
+                                                stratify=Y)
         x_train, x_val, y_train, y_val = train_test_split(
             x, y, test_size=percentage + 0.1, random_state=1, stratify=y)
     else:
-        x, x_test, y, y_test = train_test_split(inputs,
-                                                target,
+        x, x_test, y, y_test = train_test_split(X,
+                                                Y,
                                                 test_size=percentage,
                                                 random_state=1)
         x_train, x_val, y_train, y_val = train_test_split(
