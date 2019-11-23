@@ -164,8 +164,8 @@ class Preprocessor(object):
         return output
 
     def transform(self, key, value):
-        train_features = self.stats_visits_baskets(self.train, key, value)
-        predict_features = self.stats_visits_baskets(self.predict, key, value)
+        train_features = self.stats_visits_baskets(self.train, key, value).dropna()
+        predict_features = self.stats_visits_baskets(self.predict, key, value).dropna()
         return train_features, predict_features
 
 
@@ -227,7 +227,7 @@ class LabelCalculator(Preprocessor):
         label_df['last_pur'] = self.max_date - label_df['last_day']
         label_df['last_pur'] = label_df['last_pur'].apply(lambda x: x.days)
         label_df['churn'] = np.where(label_df['last_pur'] >= self.churn_days,
-                                     1, 0)
+                                     0, 1)
 
         return label_df
 
