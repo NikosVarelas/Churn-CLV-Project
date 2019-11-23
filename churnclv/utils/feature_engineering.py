@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 
 class PcaModel(PCA):
@@ -76,3 +77,21 @@ def get_top_abs_correlations(df, n=5):
     au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
     return au_corr[0:n]
 
+
+def train_valid_test_split(inputs, target, percentage, stratify_fold):
+    if stratify_fold:
+        x, x_test, y, y_test = train_test_split(inputs,
+                                                target,
+                                                test_size=percentage,
+                                                random_state=1,
+                                                stratify=target)
+        x_train, x_val, y_train, y_val = train_test_split(
+            x, y, test_size=percentage + 0.1, random_state=1, stratify=y)
+    else:
+        x, x_test, y, y_test = train_test_split(inputs,
+                                                target,
+                                                test_size=percentage,
+                                                random_state=1)
+        x_train, x_val, y_train, y_val = train_test_split(
+            x, y, test_size=percentage + 0.1, random_state=1)
+    return x_train, x_val, x_test, y_train, y_val, y_test
