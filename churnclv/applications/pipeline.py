@@ -66,9 +66,3 @@ class Pipeline(LabelCalculator, LaggedFeatures):
             x_pred = pca.transform(x_pred)
 
         return x_train, x_val, x_test, x_test, x_pred, y_train, y_val, y_test
-
-
-
-
-
-
