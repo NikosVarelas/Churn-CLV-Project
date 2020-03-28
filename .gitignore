@@ -7,3 +7,4 @@ dist/
 *.pyc
 churnclv.egg-info/*
 build/
+trained_models/
