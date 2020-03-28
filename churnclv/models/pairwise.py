@@ -13,6 +13,14 @@ class PairwiseModel(object):
 
     def create_base_network(self):
         input_features = tf.keras.Input(shape=self.input_shape)
-        x = tf.keras.layers.Dense(1, activation='sigmoid')(input_features)
+        x_hidden = tf.keras.layers.Dense(
+            4,
+            kernel_regularizer=tf.keras.regularizers.l2(0.01),
+            activation='sigmoid')(input_features)
+
+        x = tf.keras.layers.Dense(
+            1,
+            kernel_regularizer=tf.keras.regularizers.l2(0.001),
+            activation='sigmoid')(x_hidden)
         return tf.keras.models.Model(input_features, x)
 
