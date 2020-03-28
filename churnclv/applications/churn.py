@@ -1,27 +1,30 @@
-from churnclv.applications.pipeline import Pipeline
-import pandas as pd
+import pickle
+import os
+import tensorflow as tf
+
+from churnclv import BASE_PATH
+from churnclv.models.pairwise import PairwiseModel
 
 
 def main():
-    print("Reading Data")
-    data = pd.read_csv('../../data/customerData.csv', sep=',')
-    data['Transaction_date'] = pd.to_datetime(data['Transaction_date'])
-    print(data.head())
-    pipeline = Pipeline(data=data,
-                        months=1,
-                        date_col='Transaction_date',
-                        basket_col='Basket_id',
-                        churn_days=14,
-                        lag=1,
-                        n_components=8)
+    print('Loading Data')
+    with open(BASE_PATH + '/output/datasets.pickle', 'rb') as handle:
+        data = pickle.load(handle)
 
-    pipeline.fit('Customer_no', 'item_net_amount')
-    x_train, x_val, x_test, x_test, x_pred, y_train, y_val, y_test = pipeline.transform('Customer_no', 'item_net_value', 'churn')
-    print(x_train.head())
+    model = PairwiseModel(input_shape=8).create_base_network()
+    model.compile(loss='binary_crossentropy',
+                  optimizer='sgd',
+                  metrics=['accuracy', tf.keras.metrics.AUC(name='auc')])
+
+    model.fit(data['x_train_churn'].values,
+              data['y_train_churn'].values,
+              validation_data=(data['x_val_churn'].values, data['y_val_churn'].values),
+              epochs=500)
+
+    if not os.path.isdir(BASE_PATH + '/trained_models'):
+        os.mkdir(BASE_PATH + '/trained_models')
+    model.save(BASE_PATH + '/trained_models/' + 'pointwise_model.h5')
 
 
 if __name__ == '__main__':
     main()
-
-
-
