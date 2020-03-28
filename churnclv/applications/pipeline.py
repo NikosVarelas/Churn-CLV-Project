@@ -31,26 +31,23 @@ class Pipeline(LabelCalculator, LaggedFeatures):
 
         return output
 
-    def create_sets(self, key, value):
+    def create_sets(self, key):
         train = self.left_join(self.train_df, self.lagged_train, key)
         train_set = self.left_join(train, self.labels, key)
         predict_set = self.left_join(self.predict_df, self.lagged_predict, key)
 
         return train_set, predict_set
 
-    def transform(self, key, value, target):
-        train_set, x_pred = self.create_sets(key, value)
-        train_set.drop(key, axis=1, inplace=True)
-        x_pred.drop(key, axis=1, inplace=True)
+    def transform(self, key, train_set, predict_set, target):
+        train_set = train_set.drop(key, axis=1)
+        x_pred = predict_set.drop(key, axis=1)
         if target == 'churn':
             x_train, x_val, x_test, y_train, y_val, y_test = train_valid_test_split(
                 train_set.drop('clv', axis=1), target, 0.3, stratify_fold=True)
         else:
             x_train, x_val, x_test, y_train, y_val, y_test = train_valid_test_split(
-                train_set, target, 0.3, stratify_fold=False)
+                train_set.drop('churn', axis=1), target, 0.3, stratify_fold=False)
         if self.normalisation:
-            print([col for col in x_train.columns if col not in x_pred.columns])
-            print([col for col in x_pred.columns if col not in x_train.columns])
             norm = Normalization()
             norm.fit(x_train)
             x_train = norm.transform(x_train)
@@ -65,4 +62,4 @@ class Pipeline(LabelCalculator, LaggedFeatures):
             x_test = pca.transform(x_test)
             x_pred = pca.transform(x_pred)
 
-        return x_train, x_val, x_test, x_test, x_pred, y_train, y_val, y_test
+        return x_train, x_val, x_test, x_pred, y_train, y_val, y_test
