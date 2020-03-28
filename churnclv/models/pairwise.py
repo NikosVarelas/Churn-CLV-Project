@@ -1,12 +1,18 @@
-import keras.backend as K
 import tensorflow as tf
 
-def pair_loss(y_true, y_pred):
-    y_true = tf.cast(y_true, tf.int32)
-    parts = tf.dynamic_partition(y_pred, y_true, 2)
-    y_pos = parts[1]
-    y_neg = parts[0]
-    y_pos = tf.expand_dims(y_pos, 0)
-    y_neg = tf.expand_dims(y_neg, -1)
-    out = K.sigmoid(y_neg - y_pos)
-    return K.mean(out, axis=-1)
+
+class PairwiseModel(object):
+
+    def __init__(self, input_shape):
+        self.input_shape = input_shape
+
+    @staticmethod
+    def create_pairs(x, y):
+        positive, negative = tf.dynamic_partition(x, y, 2)
+        return positive, negative
+
+    def create_base_network(self):
+        input_features = tf.keras.Input(shape=self.input_shape)
+        x = tf.keras.layers.Dense(1, activation='sigmoid')(input_features)
+        return tf.keras.models.Model(input_features, x)
+
