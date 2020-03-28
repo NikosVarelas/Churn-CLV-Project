@@ -4,3 +4,4 @@ lightgbm
 numpy
 scipy
 scikit-learn
+tensorflow
