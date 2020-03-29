@@ -8,3 +8,4 @@ dist/
 churnclv.egg-info/*
 build/
 trained_models/
+output
