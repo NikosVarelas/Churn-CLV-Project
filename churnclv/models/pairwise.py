@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 
 class PairwiseModel(object):
@@ -9,7 +10,7 @@ class PairwiseModel(object):
         input_features = tf.keras.Input(shape=self.input_shape)
         x = tf.keras.layers.Dense(
             1,
-            kernel_regularizer=tf.keras.regularizers.l2(0.01),
+            kernel_regularizer=tf.keras.regularizers.l2(0.1),
             activation='sigmoid',
             name='score')(input_features)
         return tf.keras.models.Model(input_features, x)
@@ -32,12 +33,12 @@ class PairwiseModel(object):
 
 
 def create_pairs(x, y):
-    positive_customer, negative_customer= tf.dynamic_partition(x, y, 2)
+    positive_customer, negative_customer = tf.dynamic_partition(x, y, 2)
     len_pos = len(positive_customer)
     len_neg = len(negative_customer)
 
-    positive_customer = [x for i in range(len_neg) for x in positive_customer]
+    positive_customer = np.asarray([x for i in range(len_neg) for x in positive_customer])
     label = tf.ones([len(positive_customer), 1])
-    negative_customer = [x for i in range(len_pos) for x in negative_customer]
+    negative_customer = np.asarray([x for i in range(len_pos) for x in negative_customer])
 
     return positive_customer, negative_customer, label
