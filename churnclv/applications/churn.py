@@ -1,4 +1,3 @@
-import numpy as np
 import pickle
 import os
 import tensorflow as tf
@@ -16,7 +15,7 @@ def main():
     pairwise = PairwiseModel(input_shape=8)
 
     # Create the training set
-    positive_customer, negative_customer, label_train = create_pairs(
+    positive_train, negative_train, label_train = create_pairs(
         data['x_train_churn'].values, data['y_train_churn'].values)
 
     # Create the validation set
@@ -30,11 +29,20 @@ def main():
 
     print(siamese.summary())
 
+    def scheduler(epoch):
+        if epoch < 50:
+            return 0.1
+        else:
+            return float(0.1 * tf.math.exp(0.1 * (10 - epoch)))
+
+    wd = tf.keras.callbacks.LearningRateScheduler(scheduler)
+
     siamese.fit(
-        [positive_customer, negative_customer],
+        [positive_train, negative_train],
         label_train,
         validation_data=([positive_val, negative_val], label_val),
-        epochs=500)
+        callbacks=[wd],
+        epochs=100)
 
     if not os.path.isdir(BASE_PATH + '/trained_models'):
         os.mkdir(BASE_PATH + '/trained_models')
