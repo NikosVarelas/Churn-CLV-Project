@@ -1,22 +1,52 @@
-from pipeline import Pipeline
-import pandas as pd
-from churnclv.utils.feature_engineering import train_valid_test_split
+import pickle
+import os
+import tensorflow as tf
+
+from churnclv import BASE_PATH
+from churnclv.models.pairwise import PairwiseModel
+from churnclv.models.pairwise import create_pairs
 
 
 def main():
-    print("Reading Data")
-    data = pd.read_csv('./data/customerData.csv', sep=',')
-    data['Transaction_date'] = pd.to_datetime(data['Transaction_date'])
-    pipeline = Pipeline(data=data,
-                        months=1,
-                        date_col='Transaction_date',
-                        basket_col='Basket_id',
-                        churn_days=14,
-                        lag=1)
-    pipeline.fit('Customer_no', 'item_net_amount')
-    train, predict = pipeline.transform('Customer_no', 'item_net_amount')
-    x_train, x_val, x_test, y_train, y_val, y_test = train_valid_test_split(
-        train, 'churn', 0.3, stratify_fold=True)
+    print('Loading Data')
+    with open(BASE_PATH + '/output/datasets.pickle', 'rb') as handle:
+        data = pickle.load(handle)
+
+    pairwise = PairwiseModel(input_shape=8)
+
+    # Create the training set
+    positive_train, negative_train, label_train = create_pairs(
+        data['x_train_churn'].values, data['y_train_churn'].values)
+
+    # Create the validation set
+    positive_val, negative_val, label_val = create_pairs(
+        data['x_val_churn'].values, data['y_val_churn'].values)
+
+    siamese = pairwise.siamese_network()
+    siamese.compile(loss='binary_crossentropy',
+                    optimizer='sgd',
+                    metrics=['accuracy'])
+
+    print(siamese.summary())
+
+    def scheduler(epoch):
+        if epoch < 50:
+            return 0.1
+        else:
+            return float(0.1 * tf.math.exp(0.1 * (10 - epoch)))
+
+    wd = tf.keras.callbacks.LearningRateScheduler(scheduler)
+
+    siamese.fit(
+        [positive_train, negative_train],
+        label_train,
+        validation_data=([positive_val, negative_val], label_val),
+        callbacks=[wd],
+        epochs=100)
+
+    if not os.path.isdir(BASE_PATH + '/trained_models'):
+        os.mkdir(BASE_PATH + '/trained_models')
+    siamese.save(BASE_PATH + '/trained_models/' + 'siamese_model.h5')
 
 
 if __name__ == '__main__':
