@@ -1,0 +1,9 @@
+preproc:
+  data_path: /data/customerData.csv
+  transaction_date: 'Transaction_date'
+  basket_id: 'Basket_id'
+  customer_id: 'Customer_no'
+  item_amount: 'item_net_amount'
+  months_to_predict: 1
+  define_churn_days: 14
+  pca_components: 8
