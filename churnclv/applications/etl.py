@@ -2,31 +2,33 @@ from churnclv.applications.pipeline import Pipeline
 import pandas as pd
 import pickle
 import os
+
+from churnclv.config.churn_config import config
 from churnclv import BASE_PATH
 
 
-def main():
+def main(configuration):
     print("Reading Data")
-    data = pd.read_csv(BASE_PATH+'/data/customerData.csv', sep=',')
-    data['Transaction_date'] = pd.to_datetime(data['Transaction_date'])
+    data = pd.read_csv(configuration.data_path, sep=',')
+    data[configuration.transaction_date] = pd.to_datetime(data[configuration.transaction_date])
     pipeline = Pipeline(data=data,
-                        months=1,
-                        date_col='Transaction_date',
-                        basket_col='Basket_id',
-                        churn_days=14,
+                        months=configuration.months_to_predict,
+                        date_col=configuration.transaction_date,
+                        basket_col=configuration.basket_id,
+                        churn_days=configuration.define_churn_days,
                         lag=1,
-                        n_components=8)
+                        n_components=configuration.pca_components)
 
-    pipeline.fit('Customer_no', 'item_net_amount')
-    train_set, predict_set = pipeline.create_sets('Customer_no')
+    pipeline.fit(configuration.customer_id, configuration.item_amount)
+    train_set, predict_set = pipeline.create_sets(configuration.customer_id)
     x_train_chrun, x_val_churn, x_test_churn, x_pred_churn, y_train_churn, y_val_churn, y_test_chrun = pipeline.transform(
-        key='Customer_no',
+        key=configuration.customer_id,
         train_set=train_set,
         predict_set=predict_set,
         target='churn')
 
     x_train_clv, x_val_clv, x_test_clv, x_pred_clv, y_train_clv, y_val_clv, y_test_clv = pipeline.transform(
-        key='Customer_no',
+        key=configuration.customer_id,
         train_set=train_set,
         predict_set=predict_set,
         target='clv')
@@ -56,4 +58,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(config)
